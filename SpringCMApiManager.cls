@@ -39,6 +39,9 @@ public class SpringCMApiManager {
 
     public SpringCMApiManager(Boolean authflag, String session) {
         apiURL = URL.getSalesforceBaseUrl().toExternalForm() + '/services/Soap/u/54.0/' + UserInfo.getOrganizationId();
+        
+        //This is getting the custom metadata setting record for either PROD or UAT depending on whether
+        //the orgdomain is a sandbox or not a sandbox --jjackson
         apiEnvironment = SpringCMApiEnvironment.getApiEnvironment();
         sessionauth = authflag;
         this.session = session;
@@ -47,12 +50,15 @@ public class SpringCMApiManager {
 
     private void authenticate() {
         SpringCMAuthRequest springCMAuthRequest = createAuthRequest();
+
+        //jjackson--what do I pass here from the custom metadata record since we do not have a good endpoint value for those records
         String responseBody = post(springCMAuthRequest,apiEnvironment.AuthEndpoint__c + (sessionauth ? 'salesforce' : 'apiuser'));
         if (responseBody == null) return;
         SpringCMAuthResponse springCMAuthResponse = (SpringCMAuthResponse)JSON.deserialize(responseBody, Type.forName('SpringCMAuthResponse'));
         saveAuthResponse(springCMAuthResponse);
     }
- 
+    
+    //jjackson how do I change this to use the new key values and other values instead of the client key and secret
     private SpringCMAuthRequest createAuthRequest() {
         SpringCMAuthRequest springCMAuthRequest = new SpringCMAuthRequest();
         springCMAuthRequest.client_id = apiEnvironment.Client_Id__c;
@@ -94,6 +100,8 @@ public class SpringCMApiManager {
 
         //We will get in a loop if we try to add the access token to an auth call
         //since the access token is what we are trying to retrieve
+
+        //jjackson--how do I change this since we are not using endpoint from the custom metadata table
         if (!endpoint.startsWith(apiEnvironment.AuthEndpoint__c)) {
             request.setHeader('Authorization','oauth '+AccessToken);
         }
